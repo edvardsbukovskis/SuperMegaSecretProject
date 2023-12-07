@@ -1,4 +1,4 @@
 # SuperMegaSecretProject
 
 If you manage to understand what this is, keep it a secret...
-This script is considered unethical by some robots in text format.
+This script is considered unethical by some in text format so you should really keep it a secret.
