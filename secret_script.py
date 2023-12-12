@@ -14,6 +14,8 @@ import settings
 # Create a new instance of the Chrome driver
 chrome_options = Options()
 chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+chrome_options.add_argument("--start-maximized")
+#chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 username = settings.username
 password = settings.password
@@ -74,8 +76,17 @@ for i in range(29, 59):
             EC.presence_of_element_located((By.XPATH, spinner_xpath))
         )
 
+        # Click on priekšmeti container (This is needed because we are skipping some priekšmeti, so that it doesnt get stuck on thel ast priekšmets of the klase)
+        prieksmeti_container_xpath = "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[2]"
+        WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, prieksmeti_container_xpath))).click()
+
         element_xpath = f"/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[3]/ul/li[{i}]"
         element = WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, element_xpath)))
+
+        #Skip interešu izglītība or fakultatīvs
+        if "(I)" in element.text or "(F)" in element.text or "Klases stunda" in element.text:
+            continue
+
         print(klase, element.text)
 
         # Scroll the priekšmets into view
@@ -92,8 +103,34 @@ for i in range(29, 59):
             EC.presence_of_element_located((By.XPATH, spinner_xpath))
         )
         
-        #Check each priekšmets for necessary information
+        #Check each(current) priekšmets for necessary information
+        th_elements_locator = "//th[.//div[@class='Tests']]"
 
+        #Count the elements once at the beginning so we know indexes
+        element_count = driver.find_elements(By.XPATH, th_elements_locator)
+        print("PD skaits kopā: ", len(element_count))
+
+        for index in range(0, len(element_count)):
+            # Re-find all elements and select the one at the current index
+            th_elements_with_tests = driver.find_elements(By.XPATH, th_elements_locator)
+            th_element = th_elements_with_tests[index]
+
+            # Scroll to and click on the PD
+            driver.execute_script("arguments[0].scrollIntoView(true);", th_element)
+            WebDriverWait(driver, 40).until(EC.element_to_be_clickable(th_element)).click()
+                
+            # Click on "Uz uzdevumu tabulu"
+            WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'LinkToTest') and contains(text(), 'Uz uzdevumu tabulu')]"))).click()
+                
+            # Tell the driver to go back from the PD uzdevumi page to the PD window
+            driver.back()
+
+            # Wait for the page to load and re-find the elements
+            WebDriverWait(driver, 40).until(EC.presence_of_all_elements_located((By.XPATH, th_elements_locator)))
+
+            # Click X to close the PD window and be back on priekšmeta stundu table
+            WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div/div[3]/div[2]/div/div/div[1]/div[2]"))).click()
+        
 
         # Click on priekšmeti container after finished working with current priekšmets
         prieksmeti_container_xpath = "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[2]"
