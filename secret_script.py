@@ -76,7 +76,7 @@ for i in range(29, 59):
             EC.presence_of_element_located((By.XPATH, spinner_xpath))
         )
 
-        # Click on priekšmeti container (This is needed because we are skipping some priekšmeti, so that it doesnt get stuck on thel ast priekšmets of the klase)
+        # Click on priekšmeti container (This is needed because we are skipping some priekšmeti, so that it doesnt get stuck on the last priekšmets of the klase)
         prieksmeti_container_xpath = "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[2]"
         WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, prieksmeti_container_xpath))).click()
 
