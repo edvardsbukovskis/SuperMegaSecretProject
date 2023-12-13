@@ -67,6 +67,7 @@ for i in range(29, 59):
         else:
             print("No id found")
     max_id_numbers = max(id_numbers) if id_numbers else None
+    time.sleep(1)
 
     #Iterate through each priekšmets
     spinner_xpath = "//div[contains(@class, 'multiselect__spinner') and not(contains(@style, 'display: none;'))]"
