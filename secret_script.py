@@ -122,6 +122,8 @@ for i in range(29, 59):
             # Click on "Uz uzdevumu tabulu"
             WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'LinkToTest') and contains(text(), 'Uz uzdevumu tabulu')]"))).click()
                 
+            # Do some logic to check if the PD has been created correctly
+                
             # Tell the driver to go back from the PD uzdevumi page to the PD window
             driver.back()
 
