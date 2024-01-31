@@ -6,10 +6,13 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import re
 import settings
+
+start_time = time.time()
 
 # Create a new instance of the Chrome driver
 chrome_options = Options()
@@ -48,9 +51,9 @@ time.sleep(1)
 
 
 #Iterate through each klase starting from 5.a 
-for i in range(29, 59):
-    klase = driver.find_element(By.XPATH, f"/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[2]/div/div/div[3]/ul/li[{i}]/span").text
-    driver.find_element(By.XPATH, f"/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[2]/div/div/div[3]/ul/li[{i}]/span").click()
+for x in range(29, 59):
+    klase = driver.find_element(By.XPATH, f"/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[2]/div/div/div[3]/ul/li[{x}]/span").text
+    driver.find_element(By.XPATH, f"/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[2]/div/div/div[3]/ul/li[{x}]/span").click()
     time.sleep(0.2)
     #Find the max number of priekšmeti for the given klase, get the html code of it and pass it to bs4
     prieksmeti_box_html = driver.find_element(By.XPATH, "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[3]/ul")
@@ -78,8 +81,13 @@ for i in range(29, 59):
         )
 
         # Click on priekšmeti container (This is needed because we are skipping some priekšmeti, so that it doesnt get stuck on the last priekšmets of the klase)
-        prieksmeti_container_xpath = "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[2]"
-        WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, prieksmeti_container_xpath))).click()
+        try:
+            prieksmeti_container_xpath = "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[2]"
+            WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, prieksmeti_container_xpath))).click()
+        except:
+            WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[2]/div/div/div[2]"))).click()
+            WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, f"/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[2]/div/div/div[3]/ul/li[{x}]/span"))).click()
+            WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, prieksmeti_container_xpath))).click()
 
         element_xpath = f"/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[3]/ul/li[{i}]"
         element = WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, element_xpath)))
@@ -123,9 +131,19 @@ for i in range(29, 59):
             # Click on "Uz uzdevumu tabulu"
             WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'LinkToTest') and contains(text(), 'Uz uzdevumu tabulu')]"))).click()
                 
-            # Do some logic to check if the PD has been created correctly
+            ### Do some logic to check if the PD has been created correctly
             
-                
+            #Check what type of PD it is
+            # -- current stage - it just checks if the radio button is clicked on stap
+            try:
+                WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="test-evaluation-scale"]/div[3]/ul/li[4]/label/input')))
+                radio1 = driver.find_element(By.XPATH, '//*[@id="test-evaluation-scale"]/div[3]/ul/li[4]/label/input')
+                if radio1.is_selected():
+                    print("Radio button selected YIPPEEEEEEEEEEE")
+            except:
+                # Element does not exist, so do nothing and continue
+                pass
+
             # Tell the driver to go back from the PD uzdevumi page to the PD window
             driver.back()
 
@@ -138,11 +156,30 @@ for i in range(29, 59):
 
         # Click on priekšmeti container after finished working with current priekšmets
         prieksmeti_container_xpath = "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[3]/div/div/div[2]"
-        WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, prieksmeti_container_xpath))).click()
+        prieksmeti_container = WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, prieksmeti_container_xpath)))
+
+        # Scroll to the element
+        driver.execute_script("arguments[0].scrollIntoView(true);", prieksmeti_container)
+
+        # Use an ActionChains object to move to the element and click
+        actions = ActionChains(driver)
+        actions.move_to_element(prieksmeti_container).perform()
+
+        try:
+            prieksmeti_container.click()
+        except ElementClickInterceptedException:
+            # If normal click doesn't work, use JavaScript to click
+            driver.execute_script("arguments[0].click();", prieksmeti_container)
 
 
 
     #Click on klases container
     driver.find_element(By.XPATH, "/html/body/div/div/div/div[3]/div[1]/div[1]/div/div/div[2]/div/div/div[2]").click()
+
+end_time = time.time()
+
+duration_seconds = end_time - start_time
+duration_minutes = duration_seconds / 60
+print(f"Program run time: {duration_seconds} seconds ({duration_minutes} minutes)")
 
 time.sleep(5)
