@@ -131,9 +131,19 @@ for x in range(29, 59):
             # Click on "Uz uzdevumu tabulu"
             WebDriverWait(driver, 40).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'LinkToTest') and contains(text(), 'Uz uzdevumu tabulu')]"))).click()
                 
-            # Do some logic to check if the PD has been created correctly
+            ### Do some logic to check if the PD has been created correctly
             
-                
+            #Check what type of PD it is
+            # -- current stage - it just checks if the radio button is clicked on stap
+            try:
+                WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="test-evaluation-scale"]/div[3]/ul/li[4]/label/input')))
+                radio1 = driver.find_element(By.XPATH, '//*[@id="test-evaluation-scale"]/div[3]/ul/li[4]/label/input')
+                if radio1.is_selected():
+                    print("Radio button selected YIPPEEEEEEEEEEE")
+            except:
+                # Element does not exist, so do nothing and continue
+                pass
+
             # Tell the driver to go back from the PD uzdevumi page to the PD window
             driver.back()
 
